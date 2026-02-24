@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NF Organiza - Sistema de Organização de Notas Fiscais</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f172a;
+            color: #1e293b;
+        }
+
+        /* ========== TELA DE AUTENTICAÇÃO ========== */
+        .auth-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-header h1 {
+            font-size: 32px;
+            color: #0f172a;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .auth-header p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #cbd5e1;
+        }
+
+        .auth-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .auth-btn:active {
+            transform: translateY(0);
+        }
+
+        .auth-links {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            font-size: 13px;
+        }
+
+        .auth-links a {
+            color: #3b82f6;
+            text-decoration: none;
+            transition: color 0.2s ease;
+            cursor: pointer;
+        }
+
+        .auth-links a:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+
+        .auth-error {
+            color: #dc2626;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+            padding: 10px;
+            background: #fee2e2;
+            border-radius: 6px;
+            border-left: 3px solid #dc2626;
+        }
+
+        .auth-success {
+            color: #16a34a;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+            padding: 10px;
+            background: #dcfce7;
+            border-radius: 6px;
+            border-left: 3px solid #16a34a;
+        }
+
+        .form-toggle {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .form-toggle a {
+            color: #3b82f6;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .form-toggle a:hover {
+            text-decoration: underline;
+        }
+
+        .hidden-form {
+            display: none;
+        }
+
+        /* ========== LAYOUT PRINCIPAL COM SIDEBAR ========== */
+        .main-layout {
+            display: flex;
+            min-height: 100vh;
+            background: #f0f4f8;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-logo {
+            font-size: 26px;
+            font-weight: 700;
+            text-align: center;
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            border-left: 3px solid transparent;
+            font-weight: 500;
+        }
+
+        .menu-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: white;
+        }
+
+        .menu-item.active {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border-left-color: #3b82f6;
+        }
+
+        .menu-icon {
+            font-size: 20px;
+            min-width: 24px;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 8px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-email {
+            font-size: 11px;
+            opacity: 0.6;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .logout-btn {
+            width: 100%;
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fecaca;
+        }
+
+        .content-area {
+            flex: 1;
+            margin-left: 260px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .top-bar h1 {
+            font-size: 24px;
+            color: #1e293b;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .card .value {
+            font-size: 40px;
+            font-weight: 700;
+        }
+
+        .card .subtitle {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 12px;
+        }
+
+        .upload-area {
+            border: 2px dashed #3b82f6;
+            border-radius: 12px;
+            padding: 60px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+
+        .upload-area:hover {
+            border-color: #2563eb;
+            background: linear-gradient(135deg, #e0f2fe 0%, #cffafe 100%);
+        }
+
+        .upload-area.dragover {
+            border-color: #2563eb;
+            background: linear-gradient(135deg, #cffafe 0%, #a5f3fc 100%);
+        }
+
+        .upload-area svg {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 15px;
+            opacity: 0.7;
+            color: #3b82f6;
+        }
+
+        .upload-area h3 {
+            color: #1e293b;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .upload-area p {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .upload-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .upload-status.success {
+            display: block;
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .upload-status.error {
+            display: block;
+            background: #fee2e2;
+            color: #7f1d1d;
+            border: 1px solid #fecaca;
+        }
+
+        .filters {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 6px;
+        }
+
+        .filter-group input {
+            padding: 10px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        .filter-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .filter-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+        }
+
+        .reset-btn {
+            background: #e2e8f0;
+            color: #475569;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            background: #cbd5e1;
+            color: #1e293b;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table thead {
+            background: #f1f5f9;
+        }
+
+        table th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #1e293b;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 13px;
+        }
+
+        table td {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        table tbody tr {
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 32px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 16px;
+        }
+
+        .modal-header h2 {
+            color: #1e293b;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: color 0.2s ease;
+        }
+
+        .close-btn:hover {
+            color: #1e293b;
+        }
+
+        .modal-body {
+            margin-bottom: 24px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #1e293b;
+            min-width: 140px;
+        }
+
+        .detail-value {
+            color: #64748b;
+            word-break: break-word;
+            text-align: right;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+        }
+
+        .close-modal-btn {
+            background: #e2e8f0;
+            color: #475569;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal-btn:hover {
+            background: #cbd5e1;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 220px;
+            }
+
+            .content-area {
+                margin-left: 220px;
+            }
+
+            .top-bar {
+                padding: 15px;
+            }
+
+            .main-content {
+                padding: 15px;
+            }
+
+            .filters {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                width: 95%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .content-area {
+                margin-left: 0;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            table th, table td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Tela de Autenticação -->
+    <div id="authScreen" class="auth-screen">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h1>📋 NF Organiza</h1>
+                <p>Organize suas notas fiscais com simplicidade</p>
+            </div>
+
+            <!-- Formulário de Login -->
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="loginEmail">E-mail</label>
+                    <input type="email" id="loginEmail" placeholder="seu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Senha</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="auth-btn">Entrar</button>
+                <div class="auth-error" id="loginError"></div>
+                <div class="auth-links">
+                    <a id="forgotLink">Esqueci minha senha</a>
+                    <a id="signupLink">Cadastrar-se</a>
+                </div>
+            </form>
+
+            <!-- Formulário de Cadastro -->
+            <form id="signupForm" class="auth-form hidden-form">
+                <div class="form-group">
+                    <label for="signupName">Nome Completo</label>
+                    <input type="text" id="signupName" placeholder="Seu nome" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">E-mail</label>
+                    <input type="email" id="signupEmail" placeholder="seu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Senha</label>
+                    <input type="password" id="signupPassword" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirm">Confirmar Senha</label>
+                    <input type="password" id="signupConfirm" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="auth-btn">Criar Conta</button>
+                <div class="auth-error" id="signupError"></div>
+                <div class="form-toggle">
+                    Já tem uma conta? <a id="backToLoginLink">Entrar</a>
+                </div>
+            </form>
+
+            <!-- Formulário de Recuperação de Senha -->
+            <form id="forgotForm" class="auth-form hidden-form">
+                <div class="form-group">
+                    <label for="forgotEmail">E-mail</label>
+                    <input type="email" id="forgotEmail" placeholder="seu@email.com" required>
+                </div>
+                <button type="submit" class="auth-btn">Enviar Link de Recuperação</button>
+                <div class="auth-success" id="forgotSuccess"></div>
+                <div class="auth-error" id="forgotError"></div>
+                <div class="form-toggle">
+                    <a id="backToLoginLink2">Voltar ao Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Layout Principal -->
+    <div id="mainScreen" class="main-layout" style="display: none;">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">📋 NF</div>
+            </div>
+            <div class="sidebar-menu">
+                <div class="menu-item active" data-screen="dashboard">
+                    <span class="menu-icon">📊</span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="menu-item" data-screen="upload">
+                    <span class="menu-icon">📤</span>
+                    <span>Upload</span>
+                </div>
+                <div class="menu-item" data-screen="listagem">
+                    <span class="menu-icon">📋</span>
+                    <span>Listagem</span>
+                </div>
+            </div>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">Usuário</div>
+                        <div class="user-email" id="userEmail">email@example.com</div>
+                    </div>
+                </div>
+                <button class="logout-btn" id="logoutBtn">Sair</button>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <div class="top-bar">
+                <h1 id="pageTitle">Dashboard</h1>
+            </div>
+            <div class="main-content">
+                <!-- Dashboard -->
+                <div id="dashboard" class="screen active">
+                    <h2 style="margin-bottom: 30px; color: #1e293b; font-weight: 700;">Visão Geral - Mês Vigente</h2>
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <h3>Total de Notas</h3>
+                            <div class="value" id="totalNotas">0</div>
+                            <div class="subtitle" id="mesReferencia">Fevereiro 2026</div>
+                        </div>
+                        <div class="card">
+                            <h3>Valor Total</h3>
+                            <div class="value" id="valorTotal">R$ 0,00</div>
+                            <div class="subtitle">Até o final do mês</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload -->
+                <div id="upload" class="screen">
+                    <h2 style="margin-bottom: 30px; color: #1e293b; font-weight: 700;">Upload de Arquivos XML</h2>
+                    <div class="upload-area" id="uploadArea">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        <h3>Arraste seus arquivos XML aqui</h3>
+                        <p>ou clique para selecionar múltiplos arquivos</p>
+                        <button class="upload-btn" type="button">Selecionar Arquivos</button>
+                        <input type="file" id="fileInput" accept=".xml" multiple>
+                    </div>
+                    <div id="uploadStatus" class="upload-status"></div>
+                </div>
+
+                <!-- Listagem -->
+                <div id="listagem" class="screen">
+                    <h2 style="margin-bottom: 30px; color: #1e293b; font-weight: 700;">Notas Fiscais Cadastradas</h2>
+                    
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label for="dataInicio">Data Inicial</label>
+                            <input type="date" id="dataInicio">
+                        </div>
+                        <div class="filter-group">
+                            <label for="dataFim">Data Final</label>
+                            <input type="date" id="dataFim">
+                        </div>
+                        <div class="filter-group">
+                            <label for="fornecedor">Fornecedor</label>
+                            <input type="text" id="fornecedor" placeholder="Nome do fornecedor">
+                        </div>
+                        <button class="filter-btn" id="filtrarBtn">Filtrar</button>
+                        <button class="reset-btn" id="resetBtn">Limpar</button>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="notasTable">
+                            <thead>
+                                <tr>
+                                    <th>Número da Nota</th>
+                                    <th>Fornecedor</th>
+                                    <th>CNPJ</th>
+                                    <th>Data de Emissão</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="notasBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 40px; color: #999;">Carregando...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalhes -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Detalhes da Nota Fiscal</h2>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer">
+                <button class="download-btn" id="downloadXmlBtn">📥 Baixar XML</button>
+                <button class="close-modal-btn" id="closeModalBtnFooter">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'api.php';
+
+        let usuarioLogado = null;
+        let usuarioEmail = null;
+        let notaSelecionada = null;
+
+        // ========== DOM ELEMENTS ==========
+        const authScreen = document.getElementById('authScreen');
+        const mainScreen = document.getElementById('mainScreen');
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const forgotForm = document.getElementById('forgotForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const menuItems = document.querySelectorAll('.menu-item');
+        const screens = document.querySelectorAll('.screen');
+        const pageTitle = document.getElementById('pageTitle');
+        const userName = document.getElementById('userName');
+        const userEmail = document.getElementById('userEmail');
+        const userAvatar = document.getElementById('userAvatar');
+
+        // Upload
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadStatus = document.getElementById('uploadStatus');
+
+        // Listagem
+        const notasTable = document.getElementById('notasTable');
+        const notasBody = document.getElementById('notasBody');
+        const filtrarBtn = document.getElementById('filtrarBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const dataInicio = document.getElementById('dataInicio');
+        const dataFim = document.getElementById('dataFim');
+        const fornecedor = document.getElementById('fornecedor');
+
+        // Modal
+        const detailModal = document.getElementById('detailModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const closeModalBtnFooter = document.getElementById('closeModalBtnFooter');
+        const downloadXmlBtn = document.getElementById('downloadXmlBtn');
+        const modalBody = document.getElementById('modalBody');
+
+        // ========== AUTENTICAÇÃO ==========
+        function verificarLogin() {
+            const usuario = localStorage.getItem('nforganiza_usuario');
+            const email = localStorage.getItem('nforganiza_email');
+            if (usuario && email) {
+                usuarioLogado = usuario;
+                usuarioEmail = email;
+                authScreen.style.display = 'none';
+                mainScreen.style.display = 'flex';
+                atualizarPerfil();
+                loadNotas();
+                loadStats();
+            } else {
+                authScreen.style.display = 'flex';
+                mainScreen.style.display = 'none';
+            }
+        }
+
+        // Alternância entre formulários
+        document.getElementById('signupLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('loginForm').classList.add('hidden-form');
+            document.getElementById('signupForm').classList.remove('hidden-form');
+        });
+
+        document.getElementById('backToLoginLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('signupForm').classList.add('hidden-form');
+            document.getElementById('loginForm').classList.remove('hidden-form');
+            document.getElementById('signupError').style.display = 'none';
+        });
+
+        document.getElementById('forgotLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('loginForm').classList.add('hidden-form');
+            document.getElementById('forgotForm').classList.remove('hidden-form');
+        });
+
+        document.getElementById('backToLoginLink2').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('forgotForm').classList.add('hidden-form');
+            document.getElementById('loginForm').classList.remove('hidden-form');
+            document.getElementById('forgotSuccess').style.display = 'none';
+            document.getElementById('forgotError').style.display = 'none';
+        });
+
+        // Login
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (!email.includes('@') || password.length < 3) {
+                document.getElementById('loginError').textContent = 'E-mail ou senha inválidos.';
+                document.getElementById('loginError').style.display = 'block';
+                return;
+            }
+
+            localStorage.setItem('nforganiza_usuario', email.split('@')[0]);
+            localStorage.setItem('nforganiza_email', email);
+            usuarioLogado = email.split('@')[0];
+            usuarioEmail = email;
+            document.getElementById('loginError').style.display = 'none';
+            authScreen.style.display = 'none';
+            mainScreen.style.display = 'flex';
+            atualizarPerfil();
+            loadNotas();
+            loadStats();
+        });
+
+        // Cadastro
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nome = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const senha = document.getElementById('signupPassword').value.trim();
+            const confirmar = document.getElementById('signupConfirm').value.trim();
+
+            if (nome.length < 3 || !email.includes('@') || senha.length < 3 || senha !== confirmar) {
+                document.getElementById('signupError').textContent = 'Dados inválidos ou senhas não conferem.';
+                document.getElementById('signupError').style.display = 'block';
+                return;
+            }
+
+            localStorage.setItem('nforganiza_usuario', nome);
+            localStorage.setItem('nforganiza_email', email);
+            usuarioLogado = nome;
+            usuarioEmail = email;
+            document.getElementById('signupError').style.display = 'none';
+            authScreen.style.display = 'none';
+            mainScreen.style.display = 'flex';
+            atualizarPerfil();
+            loadNotas();
+            loadStats();
+        });
+
+        // Recuperação de Senha
+        forgotForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('forgotEmail').value.trim();
+
+            if (!email.includes('@')) {
+                document.getElementById('forgotError').textContent = 'E-mail inválido.';
+                document.getElementById('forgotError').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('forgotSuccess').textContent = 'Link de recuperação enviado para ' + email;
+            document.getElementById('forgotSuccess').style.display = 'block';
+            document.getElementById('forgotError').style.display = 'none';
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('nforganiza_usuario');
+            localStorage.removeItem('nforganiza_email');
+            usuarioLogado = null;
+            usuarioEmail = null;
+            loginForm.reset();
+            authScreen.style.display = 'flex';
+            mainScreen.style.display = 'none';
+        });
+
+        function atualizarPerfil() {
+            userName.textContent = usuarioLogado;
+            userEmail.textContent = usuarioEmail;
+            userAvatar.textContent = usuarioLogado.charAt(0).toUpperCase();
+        }
+
+        // ========== NAVEGAÇÃO ==========
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const screenId = item.getAttribute('data-screen');
+                showScreen(screenId);
+            });
+        });
+
+        function showScreen(screenId) {
+            screens.forEach(screen => screen.classList.remove('active'));
+            menuItems.forEach(item => item.classList.remove('active'));
+
+            document.getElementById(screenId).classList.add('active');
+            document.querySelector(`[data-screen="${screenId}"]`).classList.add('active');
+
+            const titles = {
+                'dashboard': 'Dashboard',
+                'upload': 'Upload de XMLs',
+                'listagem': 'Notas Fiscais'
+            };
+            pageTitle.textContent = titles[screenId] || 'NF Organiza';
+
+            if (screenId === 'listagem' || screenId === 'dashboard') {
+                loadNotas();
+                loadStats();
+            }
+        }
+
+        // ========== UPLOAD ==========
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            uploadStatus.style.display = 'none';
+            let successCount = 0;
+            let errorCount = 0;
+
+            Array.from(files).forEach(file => {
+                if (!file.name.endsWith('.xml')) {
+                    errorCount++;
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const xmlText = e.target.result;
+                        const parser = new DOMParser();
+                        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+                        if (xmlDoc.getElementsByTagName('parsererror').length > 0) {
+                            errorCount++;
+                            return;
+                        }
+
+                        const dadosNota = extrairDadosXML(xmlDoc, xmlText);
+
+                        if (dadosNota) {
+                            salvarNota(dadosNota)
+                                .then(() => {
+                                    successCount++;
+                                    atualizarStatus(successCount, errorCount, files.length);
+                                })
+                                .catch(() => {
+                                    errorCount++;
+                                    atualizarStatus(successCount, errorCount, files.length);
+                                });
+                        } else {
+                            errorCount++;
+                            atualizarStatus(successCount, errorCount, files.length);
+                        }
+                    } catch (error) {
+                        errorCount++;
+                        atualizarStatus(successCount, errorCount, files.length);
+                    }
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        function extrairDadosXML(xmlDoc, xmlText) {
+            try {
+                const nfeProc = xmlDoc.getElementsByTagName('nfeProc')[0];
+                if (!nfeProc) return null;
+
+                const NFe = nfeProc.getElementsByTagName('NFe')[0];
+                if (!NFe) return null;
+
+                const infNFe = NFe.getElementsByTagName('infNFe')[0];
+                if (!infNFe) return null;
+
+                const ide = infNFe.getElementsByTagName('ide')[0];
+                const emit = infNFe.getElementsByTagName('emit')[0];
+                const total = infNFe.getElementsByTagName('total')[0];
+
+                const numero = ide?.getElementsByTagName('nNF')[0]?.textContent || 'N/A';
+                const dataEmissao = ide?.getElementsByTagName('dEmi')[0]?.textContent || new Date().toISOString().split('T')[0];
+                const razaoSocial = emit?.getElementsByTagName('xNome')[0]?.textContent || 'N/A';
+                const cnpj = emit?.getElementsByTagName('CNPJ')[0]?.textContent || 'N/A';
+                const valorTotal = total?.getElementsByTagName('vNF')[0]?.textContent || '0';
+
+                return {
+                    numero_nota: numero,
+                    data_emissao: dataEmissao + ' 00:00:00',
+                    razao_social_emitente: razaoSocial,
+                    cnpj_emitente: cnpj,
+                    valor_total: parseFloat(valorTotal).toFixed(2),
+                    xml_conteudo: xmlText
+                };
+            } catch (error) {
+                console.error('Erro ao extrair dados do XML:', error);
+                return null;
+            }
+        }
+
+        function salvarNota(dados) {
+            return fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                return data;
+            });
+        }
+
+        function atualizarStatus(success, error, total) {
+            if (success + error === total) {
+                uploadStatus.classList.remove('error');
+                uploadStatus.classList.add('success');
+                uploadStatus.innerHTML = `✓ ${success} arquivo(s) processado(s) com sucesso!`;
+                if (error > 0) uploadStatus.innerHTML += ` (${error} erro(s))`;
+                uploadStatus.style.display = 'block';
+                fileInput.value = '';
+                setTimeout(() => {
+                    loadNotas();
+                    loadStats();
+                }, 1000);
+            }
+        }
+
+        // ========== CARREGAMENTO DE DADOS ==========
+        function loadNotas(dataInicio = null, dataFim = null, fornecedorNome = null) {
+            let url = API_URL + '?action=list';
+            
+            if (dataInicio && dataFim) {
+                url += `&data_inicio=${dataInicio}&data_fim=${dataFim}`;
+            }
+            if (fornecedorNome) {
+                url += `&fornecedor=${encodeURIComponent(fornecedorNome)}`;
+            }
+
+            fetch(url)
+                .then(response => response.json())
+                .then(notas => {
+                    if (!Array.isArray(notas)) notas = [];
+
+                    if (notas.length === 0) {
+                        notasBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #999;">Nenhuma nota fiscal encontrada.</td></tr>';
+                    } else {
+                        notasBody.innerHTML = notas.map(nota => `
+                            <tr onclick="abrirDetalhes(${nota.id})">
+                                <td>${nota.numero_nota}</td>
+                                <td>${nota.razao_social_emitente}</td>
+                                <td>${nota.cnpj_emitente}</td>
+                                <td>${new Date(nota.data_emissao).toLocaleDateString('pt-BR')}</td>
+                                <td>R$ ${parseFloat(nota.valor_total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                            </tr>
+                        `).join('');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar notas:', error);
+                    notasBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #999;">Erro ao carregar dados.</td></tr>';
+                });
+        }
+
+        function loadStats() {
+            fetch(API_URL + '?action=stats')
+                .then(response => response.json())
+                .then(stats => {
+                    document.getElementById('totalNotas').textContent = stats.total || 0;
+                    const valor = parseFloat(stats.valor_total || 0).toLocaleString('pt-BR', { 
+                        style: 'currency', 
+                        currency: 'BRL' 
+                    });
+                    document.getElementById('valorTotal').textContent = valor;
+                    document.getElementById('mesReferencia').textContent = stats.mes_referencia || 'Fevereiro 2026';
+                })
+                .catch(error => console.error('Erro ao carregar estatísticas:', error));
+        }
+
+        // ========== FILTROS FLEXÍVEIS ==========
+        filtrarBtn.addEventListener('click', () => {
+            const inicio = dataInicio.value;
+            const fim = dataFim.value;
+            const fornecedorNome = fornecedor.value;
+
+            // Validação: se ambas as datas estão preenchidas, validar
+            if ((inicio && !fim) || (!inicio && fim)) {
+                alert('Por favor, selecione ambas as datas ou deixe em branco.');
+                return;
+            }
+
+            if (inicio && fim && new Date(inicio) > new Date(fim)) {
+                alert('A data inicial deve ser menor que a data final.');
+                return;
+            }
+
+            // Se nenhum filtro foi preenchido, avisar
+            if (!inicio && !fim && !fornecedorNome) {
+                alert('Por favor, preencha pelo menos um filtro.');
+                return;
+            }
+
+            loadNotas(inicio || null, fim || null, fornecedorNome || null);
+        });
+
+        resetBtn.addEventListener('click', () => {
+            dataInicio.value = '';
+            dataFim.value = '';
+            fornecedor.value = '';
+            loadNotas();
+        });
+
+        // ========== MODAL DE DETALHES ==========
+        function abrirDetalhes(id) {
+            fetch(API_URL + `?action=list`)
+                .then(response => response.json())
+                .then(notas => {
+                    const nota = notas.find(n => n.id === id);
+                    if (nota) {
+                        notaSelecionada = nota;
+                        modalBody.innerHTML = `
+                            <div class="detail-row">
+                                <span class="detail-label">Número da Nota:</span>
+                                <span class="detail-value">${nota.numero_nota}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Fornecedor:</span>
+                                <span class="detail-value">${nota.razao_social_emitente}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">CNPJ:</span>
+                                <span class="detail-value">${nota.cnpj_emitente}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Data de Emissão:</span>
+                                <span class="detail-value">${new Date(nota.data_emissao).toLocaleDateString('pt-BR')}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Valor Total:</span>
+                                <span class="detail-value">R$ ${parseFloat(nota.valor_total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                        `;
+                        detailModal.classList.add('active');
+                    }
+                });
+        }
+
+        closeModalBtn.addEventListener('click', () => {
+            detailModal.classList.remove('active');
+        });
+
+        closeModalBtnFooter.addEventListener('click', () => {
+            detailModal.classList.remove('active');
+        });
+
+        detailModal.addEventListener('click', (e) => {
+            if (e.target === detailModal) {
+                detailModal.classList.remove('active');
+            }
+        });
+
+        downloadXmlBtn.addEventListener('click', () => {
+            if (notaSelecionada) {
+                fetch(API_URL + `?action=get_xml&id=${notaSelecionada.id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.xml_conteudo) {
+                            const blob = new Blob([data.xml_conteudo], { type: 'application/xml' });
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `NF_${data.numero_nota}.xml`;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                        }
+                    })
+                    .catch(error => console.error('Erro ao baixar XML:', error));
+            }
+        });
+
+        // ========== INICIALIZAÇÃO ==========
+        verificarLogin();
+    </script>
+</body>
+</html>
