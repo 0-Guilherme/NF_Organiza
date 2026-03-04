@@ -959,6 +959,7 @@
             </div>
             <div class="modal-body" id="modalBody"></div>
             <div class="modal-footer">
+                <button id="deleteNotaBtn" style="background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease; margin-right: auto;">🗑️ Excluir</button>
                 <button class="download-btn" id="downloadXmlBtn">📥 Baixar XML</button>
                 <button class="close-modal-btn" id="closeModalBtnFooter">Fechar</button>
             </div>
@@ -1461,6 +1462,34 @@
             }
         });
 
+        // Lógica do botão de excluir
+        const deleteNotaBtn = document.getElementById('deleteNotaBtn');
+        
+        deleteNotaBtn.addEventListener('click', () => {
+            if (notaSelecionada) {
+                // Pede confirmação antes de apagar
+                const confirmacao = confirm(`Tem certeza que deseja excluir a nota fiscal nº ${notaSelecionada.numero_nota} do fornecedor ${notaSelecionada.razao_social_emitente}?`);
+                
+                if (confirmacao) {
+                    // Envia a ordem de exclusão para o PHP
+                    fetch(API_URL + `?id=${notaSelecionada.id}`, {
+                        method: 'DELETE'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Fecha o modal e atualiza a tabela e os contadores
+                            detailModal.classList.remove('active');
+                            loadNotas();
+                            loadStats();
+                        } else {
+                            alert('Erro ao excluir a nota: ' + data.error);
+                        }
+                    })
+                    .catch(error => console.error('Erro ao excluir:', error));
+                }
+            }
+        });
         // ========== INICIALIZAÇÃO ==========
         verificarLogin();
     </script>
