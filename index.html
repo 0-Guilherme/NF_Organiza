@@ -1233,24 +1233,22 @@
             });
         }
 
+        // LÓGICA DE EXTRAÇÃO DE DADOS COM CORREÇÃO CONTRA NAMESPACES
         function extrairDadosXML(xmlDoc, xmlText) {
             try {
-                const nfeProc = xmlDoc.getElementsByTagName('nfeProc')[0];
-                if (!nfeProc) return null;
+                const getElement = (node, tag) => {
+                    if (!node) return null;
+                    return node.getElementsByTagName(tag)[0] || node.getElementsByTagNameNS('*', tag)[0];
+                };
 
-                const NFe = nfeProc.getElementsByTagName('NFe')[0];
-                if (!NFe) return null;
+                const ide = getElement(xmlDoc, 'ide');
+                const emit = getElement(xmlDoc, 'emit');
+                const total = getElement(xmlDoc, 'total');
 
-                const infNFe = NFe.getElementsByTagName('infNFe')[0];
-                if (!infNFe) return null;
+                if (!ide || !emit) return null;
 
-                const ide = infNFe.getElementsByTagName('ide')[0];
-                const emit = infNFe.getElementsByTagName('emit')[0];
-                const total = infNFe.getElementsByTagName('total')[0];
-
-                    // CORREÇÃO DA DATA: Procura a tag moderna (dhEmi) ou a antiga (dEmi)
-                const tagDhEmi = ide?.getElementsByTagName('dhEmi')[0]?.textContent;
-                const tagDEmi = ide?.getElementsByTagName('dEmi')[0]?.textContent;
+                const tagDhEmi = getElement(ide, 'dhEmi')?.textContent;
+                const tagDEmi = getElement(ide, 'dEmi')?.textContent;
                 let dataEmissaoFinal;
 
                 if (tagDhEmi) {
@@ -1260,18 +1258,19 @@
                 } else {
                     dataEmissaoFinal = new Date().toISOString().split('T')[0] + ' 00:00:00';
                 }
+
+                const numero = getElement(ide, 'nNF')?.textContent || 'N/A';
+                const razaoSocial = getElement(emit, 'xNome')?.textContent || 'N/A';
+                const cnpj = getElement(emit, 'CNPJ')?.textContent || 'N/A';
                 
-                const numero = ide?.getElementsByTagName('nNF')[0]?.textContent || 'N/A';
-                const razaoSocial = emit?.getElementsByTagName('xNome')[0]?.textContent || 'N/A';
-                const cnpj = emit?.getElementsByTagName('CNPJ')[0]?.textContent || 'N/A';
-                const valorTotal = total?.getElementsByTagName('vNF')[0]?.textContent || '0';
+                const vNF = getElement(total, 'vNF')?.textContent || '0';
 
                 return {
                     numero_nota: numero,
                     data_emissao: dataEmissaoFinal,
                     razao_social_emitente: razaoSocial,
                     cnpj_emitente: cnpj,
-                    valor_total: parseFloat(valorTotal).toFixed(2),
+                    valor_total: parseFloat(vNF).toFixed(2),
                     xml_conteudo: xmlText
                 };
             } catch (error) {
