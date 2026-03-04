@@ -1248,15 +1248,27 @@
                 const emit = infNFe.getElementsByTagName('emit')[0];
                 const total = infNFe.getElementsByTagName('total')[0];
 
+                    // CORREÇÃO DA DATA: Procura a tag moderna (dhEmi) ou a antiga (dEmi)
+                const tagDhEmi = ide?.getElementsByTagName('dhEmi')[0]?.textContent;
+                const tagDEmi = ide?.getElementsByTagName('dEmi')[0]?.textContent;
+                let dataEmissaoFinal;
+
+                if (tagDhEmi) {
+                    dataEmissaoFinal = tagDhEmi.substring(0, 19).replace('T', ' ');
+                } else if (tagDEmi) {
+                    dataEmissaoFinal = tagDEmi + ' 00:00:00';
+                } else {
+                    dataEmissaoFinal = new Date().toISOString().split('T')[0] + ' 00:00:00';
+                }
+                
                 const numero = ide?.getElementsByTagName('nNF')[0]?.textContent || 'N/A';
-                const dataEmissao = ide?.getElementsByTagName('dEmi')[0]?.textContent || new Date().toISOString().split('T')[0];
                 const razaoSocial = emit?.getElementsByTagName('xNome')[0]?.textContent || 'N/A';
                 const cnpj = emit?.getElementsByTagName('CNPJ')[0]?.textContent || 'N/A';
                 const valorTotal = total?.getElementsByTagName('vNF')[0]?.textContent || '0';
 
                 return {
                     numero_nota: numero,
-                    data_emissao: dataEmissao + ' 00:00:00',
+                    data_emissao: dataEmissaoFinal,
                     razao_social_emitente: razaoSocial,
                     cnpj_emitente: cnpj,
                     valor_total: parseFloat(valorTotal).toFixed(2),
