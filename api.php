@@ -117,4 +117,20 @@ if ($method === 'POST') {
         echo json_encode($stmt->fetchAll());
     }
 }
+} elseif ($method === 'DELETE') {
+    // Rota para excluir uma nota fiscal
+    $id = $_GET['id'] ?? null;
+    
+    if ($id) {
+        try {
+            $stmt = $pdo->prepare("DELETE FROM notas_fiscais WHERE id = ?");
+            $stmt->execute([$id]);
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            echo json_encode(['error' => 'Erro ao excluir no banco: ' . $e->getMessage()]);
+        }
+    } else {
+        echo json_encode(['error' => 'ID não fornecido']);
+    }
+}
 ?>
