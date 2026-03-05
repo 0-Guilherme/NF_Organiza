@@ -1,6 +1,6 @@
 -- Criação do banco de dados nforganiza
-CREATE DATABASE IF NOT EXISTS nforganiza;
-USE nforganiza;
+-- Em hospedagem compartilhada, selecione o banco no phpMyAdmin antes de executar este script.
+-- CREATE DATABASE e USE foram removidos para evitar erro de permissao.
 
 -- Tabela de usuários para autenticação (v4.0)
 CREATE TABLE IF NOT EXISTS usuarios (
