@@ -971,6 +971,7 @@
 
         let usuarioLogado = null;
         let usuarioEmail = null;
+        let usuarioId = null;
         let notaSelecionada = null;
 
         // ========== DOM ELEMENTS ==========
@@ -1012,9 +1013,11 @@
         function verificarLogin() {
             const usuario = localStorage.getItem('nforganiza_usuario');
             const email = localStorage.getItem('nforganiza_email');
-            if (usuario && email) {
+            const id = localStorage.getItem('nforganiza_id');
+            if (usuario && email && id) {
                 usuarioLogado = usuario;
                 usuarioEmail = email;
+                usuarioId = id;
                 authScreen.style.display = 'none';
                 mainScreen.style.display = 'flex';
                 atualizarPerfil();
@@ -1066,16 +1069,36 @@
                 return;
             }
 
-            localStorage.setItem('nforganiza_usuario', email.split('@')[0]);
-            localStorage.setItem('nforganiza_email', email);
-            usuarioLogado = email.split('@')[0];
-            usuarioEmail = email;
-            document.getElementById('loginError').style.display = 'none';
-            authScreen.style.display = 'none';
-            mainScreen.style.display = 'flex';
-            atualizarPerfil();
-            loadNotas();
-            loadStats();
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'login', email: email, senha: password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.setItem('nforganiza_usuario', data.nome);
+                    localStorage.setItem('nforganiza_email', data.email);
+                    localStorage.setItem('nforganiza_id', data.id);
+                    usuarioLogado = data.nome;
+                    usuarioEmail = data.email;
+                    usuarioId = data.id;
+                    document.getElementById('loginError').style.display = 'none';
+                    authScreen.style.display = 'none';
+                    mainScreen.style.display = 'flex';
+                    atualizarPerfil();
+                    loadNotas();
+                    loadStats();
+                } else {
+                    document.getElementById('loginError').textContent = data.error || 'Erro ao fazer login.';
+                    document.getElementById('loginError').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                document.getElementById('loginError').textContent = 'Erro de conexão.';
+                document.getElementById('loginError').style.display = 'block';
+            });
         });
 
         // Cadastro
@@ -1092,16 +1115,38 @@
                 return;
             }
 
-            localStorage.setItem('nforganiza_usuario', nome);
-            localStorage.setItem('nforganiza_email', email);
-            usuarioLogado = nome;
-            usuarioEmail = email;
-            document.getElementById('signupError').style.display = 'none';
-            authScreen.style.display = 'none';
-            mainScreen.style.display = 'flex';
-            atualizarPerfil();
-            loadNotas();
-            loadStats();
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'signup', nome: nome, email: email, senha: senha })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.setItem('nforganiza_usuario', data.nome);
+                    localStorage.setItem('nforganiza_email', data.email);
+                    localStorage.setItem('nforganiza_id', data.id);
+                    usuarioLogado = data.nome;
+                    usuarioEmail = data.email;
+                    usuarioId = data.id;
+                    document.getElementById('signupError').style.display = 'none';
+                    document.getElementById('signupForm').classList.add('hidden-form');
+                    document.getElementById('loginForm').classList.remove('hidden-form');
+                    authScreen.style.display = 'none';
+                    mainScreen.style.display = 'flex';
+                    atualizarPerfil();
+                    loadNotas();
+                    loadStats();
+                } else {
+                    document.getElementById('signupError').textContent = data.error || 'Erro ao cadastrar.';
+                    document.getElementById('signupError').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                document.getElementById('signupError').textContent = 'Erro de conexão.';
+                document.getElementById('signupError').style.display = 'block';
+            });
         });
 
         // Recuperação de Senha
@@ -1123,8 +1168,10 @@
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('nforganiza_usuario');
             localStorage.removeItem('nforganiza_email');
+            localStorage.removeItem('nforganiza_id');
             usuarioLogado = null;
             usuarioEmail = null;
+            usuarioId = null;
             loginForm.reset();
             authScreen.style.display = 'flex';
             mainScreen.style.display = 'none';
@@ -1281,6 +1328,7 @@
         }
 
         function salvarNota(dados) {
+            dados.usuario_id = usuarioId;
             return fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1310,7 +1358,7 @@
 
         // ========== CARREGAMENTO DE DADOS ==========
         function loadNotas(dataInicio = null, dataFim = null, fornecedorNome = null) {
-            let url = API_URL + '?action=list';
+            let url = API_URL + '?action=list&usuario_id=' + usuarioId;
             
             if (dataInicio && dataFim) {
                 url += `&data_inicio=${dataInicio}&data_fim=${dataFim}`;
@@ -1345,7 +1393,7 @@
         }
 
         function loadStats() {
-            fetch(API_URL + '?action=stats')
+            fetch(API_URL + '?action=stats&usuario_id=' + usuarioId)
                 .then(response => response.json())
                 .then(stats => {
                     document.getElementById('totalNotas').textContent = stats.total || 0;
@@ -1394,7 +1442,7 @@
 
         // ========== MODAL DE DETALHES ==========
         function abrirDetalhes(id) {
-            fetch(API_URL + `?action=list`)
+            fetch(API_URL + `?action=list&usuario_id=${usuarioId}`)
                 .then(response => response.json())
                 .then(notas => {
                     const nota = notas.find(n => n.id === id);
@@ -1443,7 +1491,7 @@
 
         downloadXmlBtn.addEventListener('click', () => {
             if (notaSelecionada) {
-                fetch(API_URL + `?action=get_xml&id=${notaSelecionada.id}`)
+                fetch(API_URL + `?action=get_xml&id=${notaSelecionada.id}&usuario_id=${usuarioId}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.xml_conteudo) {
@@ -1472,7 +1520,7 @@
                 
                 if (confirmacao) {
                     // Envia a ordem de exclusão para o PHP
-                    fetch(API_URL + `?id=${notaSelecionada.id}`, {
+                    fetch(API_URL + `?id=${notaSelecionada.id}&usuario_id=${usuarioId}`, {
                         method: 'DELETE'
                     })
                     .then(response => response.json())
