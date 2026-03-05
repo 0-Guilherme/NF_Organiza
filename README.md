@@ -1,47 +1,58 @@
-# 📋 NF Organiza - MVP
+# 📋 NF Organiza - Sistema de Gestão de NF-e
 
-Prova de conceito (MVP) de um sistema web para micro e pequenas empresas organizarem suas notas fiscais eletrônicas (NF-e) em formato XML. Focado em simplicidade, agilidade e acessibilidade, o sistema extrai dados do XML no próprio navegador e os consolida em um banco de dados relacional.
+Um sistema web ágil e seguro para micro e pequenas empresas organizarem suas notas fiscais eletrônicas (NF-e) em formato XML. Desenvolvido com foco em performance e usabilidade, o sistema processa os dados no navegador do usuário e os consolida em um banco de dados relacional seguro.
 
-## ⚙️ Stack Tecnológica
-Desenvolvido para atender aos requisitos da 2ª etapa do Projeto Integrador:
-* **Frontend:** HTML5, CSS3 e Vanilla JavaScript (Single Page Application).
-* **Processamento de Dados:** API nativa `DOMParser` do JavaScript (processamento no cliente).
-* **Backend:** PHP Estruturado utilizando PDO (proteção contra SQL Injection).
-* **Banco de Dados:** MySQL.
+## ✨ Principais Funcionalidades
 
-## 🚀 Funcionalidades Principais
-* **Autenticação Simulada (Mock):** Login e sessão controlados via `localStorage` no frontend para agilidade de testes.
-* **Upload Dinâmico:** Área de "Drag & Drop" que lê arquivos `.xml` e extrai instantaneamente Número, Data, Fornecedor, CNPJ e Valor.
-* **Dashboard Analítico:** Métricas e soma de valores referentes ao mês vigente.
-* **Listagem e Filtros:** Tabela de notas com filtros combinados por período (Data Inicial/Final) e Fornecedor.
-* **Download de XML:** Reconstrução e download da nota fiscal original armazenada no banco em formato BLOB/Text.
+* 🔐 **Autenticação:** Sistema completo de Login e Cadastro com senhas criptografadas (`password_hash`) no banco de dados e controle de sessão dinâmico.
+* 👤 **Isolamento de Dados (Relacional):** As notas fiscais são atreladas ao `id` do usuário. Cada cliente visualiza e gerencia exclusivamente os seus próprios documentos.
+* 📤 **Processamento Frontend (DOMParser):** Upload inteligente via *Drag & Drop*. O sistema lê a estrutura do `.xml` diretamente no navegador, extraindo instantaneamente Número, Data, Fornecedor, CNPJ e Valor antes de enviar ao servidor.
+* 📊 **Dashboard Analítico:** Visão gerencial automática com contadores de notas e soma de valores referentes ao mês vigente.
+* 🔍 **Filtros:** Tabela de listagem interativa com filtros combinados por período (Data Inicial/Final) e nome do Fornecedor.
+* 🗑️ **Gestão Completa:** Visualização de detalhes em Modal, exclusão segura de registros e download do XML original.
 
 ---
 
-## ▶️ Como Executar e Testar (Guia Rápido)
+## 🛠️ Stack Tecnológica
 
-O projeto foi configurado para rodar nativamente no **Laragon** (ou XAMPP), sem necessidade de instalação de dependências via terminal.
+O projeto foi construído utilizando tecnologias consolidadas, sem frameworks pesados, garantindo alta performance e facilidade de implantação:
 
-### 1. Configurando o Banco de Dados
-1. Abra o Laragon e inicie o MySQL e o Apache.
-2. Abra o gerenciador de banco de dados (ex: HeidiSQL ou phpMyAdmin).
-3. Execute integralmente o script **`database.sql`**. Ele criará o banco `nforganiza` e as tabelas necessárias.
-   * *Nota técnica:* A conexão no `api.php` utiliza o padrão do Laragon (`host=localhost`, `user=root`, sem senha).
+* **Frontend:** HTML5, CSS3 e Vanilla JavaScript (Arquitetura Single Page Application - SPA).
+* **Backend:** PHP Estruturado com PDO (Proteção nativa contra SQL Injection) e tratamento dinâmico de cabeçalhos CORS.
+* **Banco de Dados:** MySQL (Arquitetura relacional com chaves estrangeiras).
+
+---
+
+## ▶️ Como Executar o Projeto (Guia Laragon)
+
+O sistema foi otimizado para rodar nativamente no **Laragon** (ou XAMPP), dispensando a instalação de dependências via terminal.
+
+### 1. Preparando o Banco de Dados
+1. Inicie o Laragon (certifique-se de que os serviços MySQL e Nginx/Apache estão rodando).
+2. Abra o gerenciador de banco de dados (HeidiSQL, phpMyAdmin, etc.).
+3. Execute o script **`database.sql`** fornecido no repositório. Ele criará o banco `nforganiza` e as tabelas `usuarios` e `notas_fiscais`.
+   > **Nota:** A API PHP (`api.php`) utiliza as credenciais padrão do Laragon: `host=localhost`, `user=root`, sem senha.
 
 ### 2. Rodando a Aplicação
-1. Crie uma pasta chamada `nforganiza` dentro da raiz do seu servidor (`C:\laragon\www\nforganiza`).
-2. Cole os arquivos do projeto (`index.html`, `api.php`, `landing_page.html`) nesta pasta.
-3. Acesse via navegador: `http://localhost/nforganiza/landing_page.html` (para ver a página de apresentação) ou diretamente `http://localhost/nforganiza/index.html` (para o sistema).
+1. Dentro do diretório raiz do seu servidor local (ex: `C:\laragon\www`), crie uma pasta chamada `nforganiza`.
+2. Cole todos os arquivos do projeto (`index.html`, `api.php`, `landing_page.html`, etc.) dentro desta pasta.
+3. Acesse via navegador: `http://localhost/nforganiza` (ou o domínio virtual gerado pelo Laragon, ex: `http://nforganiza.test`).
 
-### 3. Como testar o Login (Importante)
-Para facilitar a avaliação deste MVP, o sistema de autenticação atua de forma simulada no frontend:
-* Na tela de login, insira **qualquer e-mail válido** (ex: `teste@teste.com`) e **qualquer senha** (mínimo de 3 caracteres).
-* O acesso será liberado imediatamente e a sessão salva no seu navegador.
-* *Nota técnica:* Embora a tabela `usuarios` exista no banco de dados estruturalmente, o salvamento das notas fiscais via `api.php` neste MVP grava os documentos diretamente na tabela `notas_fiscais` sem exigir chave estrangeira obrigatória, agilizando a demonstração.
+---
+
+## 🧪 Como Testar o Sistema
+
+Como o sistema agora possui autenticação backend real com relacionamento de tabelas, siga estes passos para testar:
+
+1. **Crie uma conta:** Na tela inicial, clique em "Cadastrar-se" e crie um usuário de teste (ex: `teste@teste.com`). As credenciais serão salvas de forma segura no MySQL.
+2. **Faça o Upload:** Arraste um arquivo `.xml` válido de NF-e para a área pontilhada.
+3. **Valide o Isolamento:** Se você criar uma segunda conta e fizer login com ela, não verá as notas fiscais enviadas pela primeira conta.
 
 ---
 
 ## 👥 Desenvolvedores (Projeto Integrador)
+
+Projeto desenvolvido para a 2ª etapa do Projeto Integrador por:
 * Ana Quezia Flores Costa e Silva
 * Erasmo Eloi da Hora Neto
 * Guilherme Ramos De Oliveira
