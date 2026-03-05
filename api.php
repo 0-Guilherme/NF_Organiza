@@ -185,20 +185,29 @@ if ($method === 'POST') {
     // ========== ESTATÍSTICAS DO MÊS ==========
     if ($action === 'stats') {
         try {
-            $mes = date('m');
-            $ano = date('Y');
-            
-            $sql = "SELECT COUNT(*) as total, SUM(valor_total) as valor_total 
-                    FROM notas_fiscais 
-                    WHERE usuario_id = :usuario_id AND MONTH(data_emissao) = :mes AND YEAR(data_emissao) = :ano";
-            
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([':usuario_id' => $usuarioId, ':mes' => $mes, ':ano' => $ano]);
+            $periodo = $_GET['periodo'] ?? 'geral'; // geral | mes
+
+            if ($periodo === 'mes') {
+                $mes = date('m');
+                $ano = date('Y');
+                $sql = "SELECT COUNT(*) as total, SUM(valor_total) as valor_total
+                        FROM notas_fiscais
+                        WHERE usuario_id = :usuario_id AND MONTH(data_emissao) = :mes AND YEAR(data_emissao) = :ano";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([':usuario_id' => $usuarioId, ':mes' => $mes, ':ano' => $ano]);
+            } else {
+                $sql = "SELECT COUNT(*) as total, SUM(valor_total) as valor_total
+                        FROM notas_fiscais
+                        WHERE usuario_id = :usuario_id";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([':usuario_id' => $usuarioId]);
+            }
+
             $result = $stmt->fetch();
             
             $result['total'] = $result['total'] ?? 0;
             $result['valor_total'] = $result['valor_total'] ?? 0;
-            $result['mes_referencia'] = date('F/Y');
+            $result['mes_referencia'] = $periodo === 'mes' ? date('m/Y') : 'Geral';
             
             echo json_encode($result);
         } catch (Exception $e) {
