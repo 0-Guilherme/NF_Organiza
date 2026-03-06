@@ -1407,19 +1407,26 @@
                 });
         }
 
-    function loadStats() {
+        function loadStats() {
+            // Busca estatísticas do MÊS
             fetch(API_URL + '?action=stats&periodo=mes&usuario_id=' + usuarioId)
                 .then(response => response.json())
                 .then(stats => {
                     document.getElementById('totalNotas').textContent = stats.total || 0;
-                    const valor = parseFloat(stats.valor_total || 0).toLocaleString('pt-BR', { 
-                        style: 'currency', 
-                        currency: 'BRL' 
-                    });
-                    document.getElementById('valorTotal').textContent = valor;
+                    document.getElementById('valorTotal').textContent = parseFloat(stats.valor_total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                     document.getElementById('mesReferencia').textContent = stats.mes_referencia || 'Mês Atual';
                 })
-                .catch(error => console.error('Erro ao carregar estatísticas:', error));
+                .catch(error => console.error('Erro nas estatísticas mensais:', error));
+
+            // Busca estatísticas do ANO
+            fetch(API_URL + '?action=stats&periodo=ano&usuario_id=' + usuarioId)
+                .then(response => response.json())
+                .then(stats => {
+                    document.getElementById('totalNotasAno').textContent = stats.total || 0;
+                    document.getElementById('valorTotalAno').textContent = parseFloat(stats.valor_total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    document.getElementById('anoReferencia').textContent = stats.mes_referencia || 'Ano Atual';
+                })
+                .catch(error => console.error('Erro nas estatísticas anuais:', error));
         }
 
         // ========== FILTROS FLEXÍVEIS ==========
