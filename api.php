@@ -13,11 +13,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$host = 'localhost';
-$db   = 'nforganiza';
-$user = 'root';
-$pass = '';
-$charset = 'utf8mb4';
+function loadEnvFile(string $path): void
+{
+    if (!file_exists($path)) {
+        return;
+    }
+
+    $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if ($lines === false) {
+        return;
+    }
+
+    foreach ($lines as $line) {
+        $trimmed = trim($line);
+        if ($trimmed === '' || strpos($trimmed, '#') === 0) {
+            continue;
+        }
+
+        $parts = explode('=', $trimmed, 2);
+        if (count($parts) !== 2) {
+            continue;
+        }
+
+        $key = trim($parts[0]);
+        $value = trim($parts[1]);
+
+        $firstChar = substr($value, 0, 1);
+        $lastChar = substr($value, -1);
+        if (
+            ($firstChar === '"' && $lastChar === '"') ||
+            ($firstChar === "'" && $lastChar === "'")
+        ) {
+            $value = substr($value, 1, -1);
+        }
+
+        putenv("$key=$value");
+        $_ENV[$key] = $value;
+    }
+}
+
+loadEnvFile(__DIR__ . '/.env');
+
+$host = getenv('DB_HOST') ?: 'localhost';
+$db   = getenv('DB_NAME') ?: 'nforganiza';
+$user = getenv('DB_USER') ?: 'root';
+$pass = getenv('DB_PASS') ?: '';
+$charset = getenv('DB_CHARSET') ?: 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $options = [
@@ -144,20 +185,29 @@ if ($method === 'POST') {
     // ========== ESTATÍSTICAS DO MÊS ==========
     if ($action === 'stats') {
         try {
-            $mes = date('m');
-            $ano = date('Y');
-            
-            $sql = "SELECT COUNT(*) as total, SUM(valor_total) as valor_total 
-                    FROM notas_fiscais 
-                    WHERE usuario_id = :usuario_id AND MONTH(data_emissao) = :mes AND YEAR(data_emissao) = :ano";
-            
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([':usuario_id' => $usuarioId, ':mes' => $mes, ':ano' => $ano]);
+            $periodo = $_GET['periodo'] ?? 'geral'; // geral | mes
+
+            if ($periodo === 'mes') {
+                $mes = date('m');
+                $ano = date('Y');
+                $sql = "SELECT COUNT(*) as total, SUM(valor_total) as valor_total
+                        FROM notas_fiscais
+                        WHERE usuario_id = :usuario_id AND MONTH(data_emissao) = :mes AND YEAR(data_emissao) = :ano";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([':usuario_id' => $usuarioId, ':mes' => $mes, ':ano' => $ano]);
+            } else {
+                $sql = "SELECT COUNT(*) as total, SUM(valor_total) as valor_total
+                        FROM notas_fiscais
+                        WHERE usuario_id = :usuario_id";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([':usuario_id' => $usuarioId]);
+            }
+
             $result = $stmt->fetch();
             
             $result['total'] = $result['total'] ?? 0;
             $result['valor_total'] = $result['valor_total'] ?? 0;
-            $result['mes_referencia'] = date('F/Y');
+            $result['mes_referencia'] = $periodo === 'mes' ? date('m/Y') : 'Geral';
             
             echo json_encode($result);
         } catch (Exception $e) {

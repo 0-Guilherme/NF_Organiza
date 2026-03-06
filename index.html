@@ -876,7 +876,7 @@
             <div class="main-content">
                 <!-- Dashboard -->
                 <div id="dashboard" class="screen active">
-                    <h2 style="margin-bottom: 30px; color: #1e293b; font-weight: 700;">Visão Geral - Mês Vigente</h2>
+                    <h2 style="margin-bottom: 30px; color: #1e293b; font-weight: 700;">Visão Geral</h2>
                     <div class="dashboard-grid">
                         <div class="card">
                             <h3>Total de Notas</h3>
@@ -1393,7 +1393,7 @@
         }
 
         function loadStats() {
-            fetch(API_URL + '?action=stats&usuario_id=' + usuarioId)
+            fetch(API_URL + '?action=stats&periodo=geral&usuario_id=' + usuarioId)
                 .then(response => response.json())
                 .then(stats => {
                     document.getElementById('totalNotas').textContent = stats.total || 0;
@@ -1402,7 +1402,7 @@
                         currency: 'BRL' 
                     });
                     document.getElementById('valorTotal').textContent = valor;
-                    document.getElementById('mesReferencia').textContent = stats.mes_referencia || 'Fevereiro 2026';
+                    document.getElementById('mesReferencia').textContent = stats.mes_referencia || 'Geral';
                 })
                 .catch(error => console.error('Erro ao carregar estatísticas:', error));
         }
