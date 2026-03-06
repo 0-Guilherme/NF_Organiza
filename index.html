@@ -881,7 +881,7 @@
                         <div class="card">
                             <h3>Total de Notas</h3>
                             <div class="value" id="totalNotas">0</div>
-                            <div class="subtitle" id="mesReferencia">Fevereiro 2026</div>
+                            <div class="subtitle" id="mesReferencia">Mês Atual</div>
                         </div>
                         <div class="card">
                             <h3>Valor Total</h3>
@@ -1392,8 +1392,8 @@
                 });
         }
 
-        function loadStats() {
-            fetch(API_URL + '?action=stats&periodo=geral&usuario_id=' + usuarioId)
+    function loadStats() {
+            fetch(API_URL + '?action=stats&periodo=mes&usuario_id=' + usuarioId)
                 .then(response => response.json())
                 .then(stats => {
                     document.getElementById('totalNotas').textContent = stats.total || 0;
@@ -1402,7 +1402,7 @@
                         currency: 'BRL' 
                     });
                     document.getElementById('valorTotal').textContent = valor;
-                    document.getElementById('mesReferencia').textContent = stats.mes_referencia || 'Geral';
+                    document.getElementById('mesReferencia').textContent = stats.mes_referencia || 'Mês Atual';
                 })
                 .catch(error => console.error('Erro ao carregar estatísticas:', error));
         }
