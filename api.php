@@ -182,38 +182,46 @@ if ($method === 'POST') {
     $action = $_GET['action'] ?? 'list';
     $usuarioId = $_GET['usuario_id'] ?? null;
 
-// ========== ESTATÍSTICAS DO MÊS ==========
+// ========== ESTATÍSTICAS (MÊS E ANO) ==========
     if ($action === 'stats') {
         try {
-            $periodo = $_GET['periodo'] ?? 'geral';
+            $periodo = $_GET['periodo'] ?? 'mes'; 
+            $anoAtual = date('Y');
 
             if ($periodo === 'mes') {
                 $mes = date('m');
-                $ano = date('Y');
                 $sql = "SELECT COUNT(*) as total, SUM(valor_total) as valor_total 
                         FROM notas_fiscais 
                         WHERE usuario_id = :usuario_id AND MONTH(data_emissao) = :mes AND YEAR(data_emissao) = :ano";
                 $stmt = $pdo->prepare($sql);
-                $stmt->execute([':usuario_id' => $usuarioId, ':mes' => $mes, ':ano' => $ano]);
+                $stmt->execute([':usuario_id' => $usuarioId, ':mes' => $mes, ':ano' => $anoAtual]);
+                
+                $meses = ['', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                $mes_referencia = $meses[(int)$mes] . ' ' . $anoAtual;
+
+            } elseif ($periodo === 'ano') {
+                // Filtra APENAS pelo ano, ignorando o mês
+                $sql = "SELECT COUNT(*) as total, SUM(valor_total) as valor_total 
+                        FROM notas_fiscais 
+                        WHERE usuario_id = :usuario_id AND YEAR(data_emissao) = :ano";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([':usuario_id' => $usuarioId, ':ano' => $anoAtual]);
+                
+                $mes_referencia = 'Ano ' . $anoAtual;
+
             } else {
                 $sql = "SELECT COUNT(*) as total, SUM(valor_total) as valor_total 
                         FROM notas_fiscais 
                         WHERE usuario_id = :usuario_id";
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([':usuario_id' => $usuarioId]);
+                $mes_referencia = 'Geral';
             }
 
             $result = $stmt->fetch();
-            
             $result['total'] = $result['total'] ?? 0;
             $result['valor_total'] = $result['valor_total'] ?? 0;
-            
-            // Lógica para deixar o mês em Português
-            $meses = ['', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-            $mesAtual = $meses[(int)date('m')];
-            $anoAtual = date('Y');
-            
-            $result['mes_referencia'] = $periodo === 'mes' ? $mesAtual . ' ' . $anoAtual : 'Geral';
+            $result['mes_referencia'] = $mes_referencia;
             
             echo json_encode($result);
         } catch (Exception $e) {
