@@ -64,7 +64,7 @@ DB_CHARSET=utf8mb4
 
 ## Desenvolvedores (Projeto Integrador)
 
-- Ana Quezia Flores Costa e Silva
+- Ana Quézia Flores Costa e Silva
 - Erasmo Eloi da Hora Neto
 - Guilherme Ramos De Oliveira
 - Henrique Dias Van Rossum Da Silva
