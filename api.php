@@ -15,8 +15,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 function loadEnvFile(string $path): void
 {
+    
     if (!file_exists($path)) {
         return;
+        
     }
 
     $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -87,7 +89,7 @@ if ($method === 'POST') {
 
     $action = $data['action'] ?? null;
 
-    // ========== AUTENTICAÇÃO - SIGNUP ==========
+    // ========== AUTENTICAÇÃO - SIGNUP ============
     if ($action === 'signup') {
         try {
             $nome = $data['nome'] ?? null;
@@ -99,7 +101,7 @@ if ($method === 'POST') {
                 exit;
             }
 
-            // Verificar se o e-mail já existe
+            // ======= Verificar se o e-mail já existe =======
             $stmt = $pdo->prepare("SELECT id FROM usuarios WHERE email = ?");
             $stmt->execute([$email]);
             if ($stmt->fetch()) {
@@ -107,7 +109,7 @@ if ($method === 'POST') {
                 exit;
             }
 
-            // Inserir novo usuário
+            // ====== Inserir novo usuário ======
             $senhaHash = password_hash($senha, PASSWORD_BCRYPT);
             $stmt = $pdo->prepare("INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)");
             $stmt->execute([$nome, $email, $senhaHash]);
